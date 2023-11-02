@@ -181,3 +181,50 @@ class RoadSpiral(RoadGeometry):
         # angle_arr[0]=angle_arr[1]
         # for i in range(n):
         #     self.points.append(Point(xarr[i*2], yarr[i*2], i,angle_arr[i]))
+class RoadParamPoly3(RoadGeometry):
+    def __init__(self, s, x, y, hdg, length, aU, bU, cU, dU, aV, bV, cV, dV, pRange):
+        super(RoadParamPoly3, self).__init__(s, x, y, hdg, length,style='paramPoly3')
+        self._aU = aU
+        self._bU = bU
+        self._cU = cU
+        self._dU = dU
+        self._aV = aV
+        self._bV = bV
+        self._cV = cV
+        self._dV = dV
+        self._pRange = 1
+
+      if pRange is None:
+            self._pRange = 1.0
+        elif pRange=="normalized":
+            self._pRange = 1.0
+        else:
+            self._pRange = pRange
+      
+        self.calc_position()
+   
+    def calc_position(self):
+        # Position
+        n = int(ceil(self.length)+1)
+        for s in list(range(n)):
+            S = (s / self.length) * self._pRange
+
+            coeffs_u = [self._aU, self._bU, self._cU, self._dU]
+            coeffs_v = [self._aV, self._bV, self._cV, self._dV]
+
+            x = np.polynomial.polynomial.polyval(S, coeffs_u)
+            y = np.polynomial.polynomial.polyval(S, coeffs_v)
+
+            cos_heading = np.cos(self.hdg)
+            sin_heading = np.sin(self.hdg)
+            xrot = x * cos_heading - y * sin_heading
+            yrot = x * sin_heading + y * cos_heading
+           
+            d_coeffs_u = coeffs_u[1:] * np.array(np.arange(1, len(coeffs_u)))
+            d_coeffs_v = coeffs_v[1:] * np.array(np.arange(1, len(coeffs_v)))
+            
+            # Tangent is defined by derivation
+            dx = np.polynomial.polynomial.polyval(S, d_coeffs_u)
+            dy = np.polynomial.polynomial.polyval(S, d_coeffs_v)
+            tangent = np.arctan2(dy, dx)
+            self.points.append(Point(self.x + xrot , self.y + yrot, (self.s + s), (self.hdg + tangent)))
