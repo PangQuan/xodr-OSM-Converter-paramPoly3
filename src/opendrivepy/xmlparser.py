@@ -76,7 +76,18 @@ class XMLParser(object):
                     curv_start = float(geometry[0].get('curvStart'))
                     curv_end = float(geometry[0].get('curvEnd'))
                     plan_view.append(RoadSpiral(s, x, y, hdg, length, curv_start, curv_end))
-
+                elif record == 'paramPoly3':
+                    aU = float(geometry[0].get('aU'))
+                    bU = float(geometry[0].get('bU'))
+                    cU = float(geometry[0].get('cU'))
+                    dU = float(geometry[0].get('dU'))
+                    aV = float(geometry[0].get('aV'))
+                    bV = float(geometry[0].get('bV'))
+                    cV = float(geometry[0].get('cV'))
+                    dV = float(geometry[0].get('dV'))
+                    pRange = geometry[0].get('pRange') 
+                    plan_view.append(RoadParamPoly3(s, x, y, hdg, length, aU, bU, cU, dU, aV, bV, cV, dV, pRange))
+                    
             # Parses elevationProfile for geometry records
             elevationProfile = road.find('elevationProfile')
             elevations = list()
